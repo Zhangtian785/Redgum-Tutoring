@@ -81,40 +81,7 @@ class SessionManager:
         return True, f"Session booked. Session ID: {session['session_id']}"
 
     # ============ US05 修改/取消预约 ============
-    def update_session(self, session_id, new_date=None, new_start=None, new_duration=None):
-        """修改预约时间：修改后的时间仍须通过可用时段与冲突校验"""
-        for sess in self.sessions:
-            if sess["session_id"] == session_id:
-                if new_date:
-                    sess["session_date"] = new_date
-                if new_start:
-                    sess["start_time"] = new_start
-                if new_duration:
-                    sess["duration_min"] = new_duration
-
-                date_obj = datetime.strptime(sess["session_date"], "%Y-%m-%d")
-                weekday = date_obj.strftime("%A")
-                start_dt = datetime.strptime(sess["start_time"], "%H:%M")
-                end_dt = start_dt + timedelta(minutes=sess["duration_min"])
-                session_end = end_dt.strftime("%H:%M")
-
-                if not self._is_time_in_availability(sess["tutor_id"], weekday, sess["start_time"], session_end):
-                    return False, "Update failed: new time outside tutor availability window"
-                if self._tutor_busy(sess["tutor_id"], sess["session_date"], sess["start_time"], session_end, exclude_id=session_id):
-                    return False, "Update failed: time conflict with another session"
-
-                save_data(SESSION_FILE, self.sessions)
-                return True, "Session updated successfully"
-        return False, "Session not found"
-
-    def cancel_session(self, session_id):
-        """取消预约：记录保留（status=cancelled），不删除数据"""
-        for sess in self.sessions:
-            if sess["session_id"] == session_id:
-                sess["status"] = "cancelled"
-                save_data(SESSION_FILE, self.sessions)
-                return True, "Session cancelled (record kept)"
-        return False, "Session not found"
+    
 
     # ============ US06 导师查看自己即将到来的课程 ============
     def get_tutor_upcoming_sessions(self, tutor_id):
