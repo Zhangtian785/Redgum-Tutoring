@@ -115,6 +115,31 @@ class SessionManager:
                 save_data(SESSION_FILE, self.sessions)
                 return True, "Session cancelled (record kept)"
         return False, "Session not found"
+      # ============ US06 导师查看自己即将到来的课程 ============
+
+def get_tutor_upcoming_sessions(self, tutor_id):
+        """返回某导师未来未取消的预约（只含自己的课程，不含别人的）"""
+        today = datetime.now().date()
+        result = []
+        for sess in self.sessions:
+            sess_date = datetime.strptime(sess["session_date"], "%Y-%m-%d").date()
+            if sess["tutor_id"] == tutor_id and sess["status"] == "booked" and sess_date >= today:
+                result.append(sess)
+        return result
+
+    # 中心课表视图（按天/周）
+    def get_sessions_by_day(self, target_date):
+        return [s for s in self.sessions if s["session_date"] == target_date]
+
+    def get_sessions_by_week(self, start_week_date):
+        start = datetime.strptime(start_week_date, "%Y-%m-%d").date()
+        end = start + timedelta(days=6)
+        return [s for s in self.sessions
+                if start <= datetime.strptime(s["session_date"], "%Y-%m-%d").date() <= end]
+
+    # 单个学生的历史和未来课程
+    def get_student_all_sessions(self, student_id):
+        return [s for s in self.sessions if s["student_id"] == student_id]
 
     
     
