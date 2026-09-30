@@ -18,33 +18,7 @@ class SessionManager:
         self.tutor_mgr = tutor_manager
         self.student_mgr = student_manager
 
-    # ============ 时间校验工具（US08 核心逻辑）============
-    def _is_time_in_availability(self, tutor_id, weekday, start_time, end_time):
-        """检查某时间段是否完全落在导师可用时段内（US08 时间校验）"""
-        avail_list = self.tutor_mgr.get_tutor_availability(tutor_id)
-        for avail in avail_list:
-            if avail["weekday"].lower() == weekday.lower():
-                a_start = datetime.strptime(avail["start_time"], "%H:%M").time()
-                a_end = datetime.strptime(avail["end_time"], "%H:%M").time()
-                s_start = datetime.strptime(start_time, "%H:%M").time()
-                s_end = datetime.strptime(end_time, "%H:%M").time()
-                if s_start >= a_start and s_end <= a_end:
-                    return True
-        return False
-
-    def _tutor_busy(self, tutor_id, session_date, start_time, end_time, exclude_id=None):
-        """检查该导师在同一时间是否已有未取消预约（US08 防重复冲突）"""
-        for sess in self.sessions:
-            if sess["tutor_id"] == tutor_id and sess["session_date"] == session_date \
-                    and sess["status"] != "cancelled" and sess["session_id"] != exclude_id:
-                s_start = datetime.strptime(sess["start_time"], "%H:%M").time()
-                s_end_dt = datetime.strptime(sess["start_time"], "%H:%M") + timedelta(minutes=sess["duration_min"])
-                s_end = s_end_dt.time()
-                new_start = datetime.strptime(start_time, "%H:%M").time()
-                new_end = datetime.strptime(end_time, "%H:%M").time()
-                if not (new_end <= s_start or new_start >= s_end):  # 时间段重叠
-                    return True
-        return False
+    
 
     # ============ US04 新建预约 + 时间校验 ============
     def create_session(self, student_id, tutor_id, session_date, start_time, duration_min):
